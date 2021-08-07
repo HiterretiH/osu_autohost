@@ -53,10 +53,11 @@ try:
                                 osubot.send(f"PRIVMSG {room} :!mp host {queue[0]}")
                             print(player, "joined the game")
                         elif "left the game" in msg:
-                            player = msg[:msg.find("left the game")]
+                            player = msg[:msg.find("left the game")-1]
                             if player == queue[0] and len(queue) > 1:
                                 osubot.send(f"PRIVMSG {room} :!mp host {queue[1]}")
-                            queue.remove(player)
+                            if player in queue:
+                                queue.remove(player)
                             print(player, "left the game")
                         elif "the match has started!" == msg:
                             print("Match started")
