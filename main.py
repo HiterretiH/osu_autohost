@@ -47,7 +47,7 @@ try:
 
                     if name == "banchobot":
                         if "joined in slot" in msg:
-                            player = msg[:msg.find("joined in slot")]
+                            player = msg[:msg.find("joined in slot")-1]
                             queue.append(player)
                             if len(queue) == 1:
                                 osubot.send(f"PRIVMSG {room} :!mp host {queue[0]}")
