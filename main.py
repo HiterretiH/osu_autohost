@@ -69,7 +69,7 @@ try:
                                 osubot.send(f"PRIVMSG {room} :!mp host {queue[0]}")
                                 osubot.send(f"NAMES {room}")
                                 names = []
-                                receiving_names = False
+                                receiving_names = True
 
                     else:
                         if msg in ("!info", "!queue"):
