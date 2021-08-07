@@ -28,7 +28,7 @@ try:
                     if f"{config.osuirc_name} = {room}" in line:
                         msg = line[line.find(sep) + len(sep):]
                         for user in msg.split(' '):
-                            if user[0] != '+':
+                            if user[0] != '+' and user != "@banchobot":
                                 names.append(user)
                                 if user not in queue:
                                     queue.append(user)
