@@ -94,6 +94,6 @@ try:
 
 except KeyboardInterrupt:
     if room:
-        print("Room closed")
         osubot.send(f"PRIVMSG {room} :!mp close")
+        print("Room closed")
     osubot.close()
