@@ -1,6 +1,7 @@
 import osu
 import config
 from time import time
+import collections
 
 config.osuirc_name = config.osuirc_name.replace(' ', '_').lower()
 
@@ -8,7 +9,7 @@ osubot = osu.OsuIrc(config.osuirc_name, config.osuirc_password)
 osubot.connect()
 
 osubot.send(f"PRIVMSG BanchoBot :mp make {config.lobby_name}")
-queue = []
+queue = collections.deque()
 room = ""
 commands_time = {"!queue": 0, "!info": 0}
 names = []
@@ -36,7 +37,7 @@ try:
                         receiving_names = False
                         if queue[0] not in names:
                             while len(queue) > 0 and queue[0] not in names:
-                                queue.pop(0)
+                                queue.popleft()
                             if len(queue) > 0:
                                 osubot.send(f"PRIVMSG {room} :!mp host {queue[0]}")
                         print("Current players:", *names)
@@ -62,8 +63,7 @@ try:
                         elif "the match has started!" == msg:
                             print("Match started")
                             if len(queue) > 1:
-                                el = queue.pop(0)
-                                queue.append(el)
+                                queue.rotate(-1)
                         elif "the match has finished!" == msg:
                             print("Match finished")
                             if len(queue) > 0:
