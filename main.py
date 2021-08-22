@@ -47,13 +47,13 @@ try:
 
                     if name == "banchobot":
                         if "joined in slot" in msg:
-                            player = msg[:msg.find("joined in slot")-1]
+                            player = msg[:msg.find("joined in slot")-1].replace(' ', '_')
                             queue.append(player)
                             if len(queue) == 1:
                                 osubot.send(f"PRIVMSG {room} :!mp host {queue[0]}")
                             print(player, "joined the game")
                         elif "left the game" in msg:
-                            player = msg[:msg.find("left the game")-1]
+                            player = msg[:msg.find("left the game")-1].replace(' ', '_')
                             if player == queue[0] and len(queue) > 1:
                                 osubot.send(f"PRIVMSG {room} :!mp host {queue[1]}")
                             if player in queue:
