@@ -55,7 +55,7 @@ try:
                             print(player, "joined the game")
                         elif "left the game" in msg:
                             player = msg[:msg.find("left the game")-1].replace(' ', '_')
-                            if player == queue[0] and len(queue) > 1:
+                            if len(queue) > 1 and player == queue[0]:
                                 osubot.send(f"PRIVMSG {room} :!mp host {queue[1]}")
                             if player in queue:
                                 queue.remove(player)
