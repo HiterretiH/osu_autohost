@@ -48,7 +48,7 @@ try:
                                     queue.append(user)
                     if line.endswith("end of /names list."):
                         receiving_names = False
-                        if queue[0] not in names:
+                        if len(queue) > 0 and queue[0] not in names:
                             while len(queue) > 0 and queue[0] not in names:
                                 queue.popleft()
                             if len(queue) > 0:
