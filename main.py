@@ -22,9 +22,22 @@ try:
 
             if line == "ping cho.ppy.sh":
                 osubot.send("PONG cho.ppy.sh")
+                if room and not receiving_names and len(queue) > 0: # check if next host is still here
+                    osubot.send(f"NAMES {room}")
+                    names = []
+                    receiving_names = True
                 continue
 
             if room:
+                if line == f":{config.osuirc_name}!cho@ppy.sh part :{room}":
+                    print("Old room is closed. Creating new one...")
+                    osubot.send(f"PRIVMSG BanchoBot :mp make {config.lobby_name}")
+                    queue = collections.deque()
+                    room = ""
+                    names = []
+                    receiving_names = False
+                    continue
+
                 if receiving_names:
                     if f"{config.osuirc_name} = {room}" in line:
                         msg = line[line.find(sep) + len(sep):]
