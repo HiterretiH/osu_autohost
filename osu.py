@@ -13,7 +13,7 @@ class OsuIrc:
         self.sock.connect((self.host, self.port))
         self.send("PASS " + self.password)
         self.send("NICK " + self.name)
-        print("Conncected to Bancho")
+        print("Connected to Bancho")
 
     def close(self):
         self.sock.close()
