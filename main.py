@@ -3,6 +3,16 @@ import config
 from time import time
 import collections
 
+
+def get_new_line(irc):
+    prev = ""
+    while True:
+        lines = (prev + irc.receive()).split("\n")
+        for i in range(len(lines)-1):
+            yield lines[i].strip()
+        prev = lines[-1]
+
+
 config.osuirc_name = config.osuirc_name.replace(' ', '_').lower()
 
 osubot = osu.OsuIrc(config.osuirc_name, config.osuirc_password)
@@ -17,12 +27,10 @@ receiving_names = False
 
 try:
     while True:
-        for line in osubot.receive().split('\n'):
-            line = line.strip()
-
+        for line in get_new_line(osubot):
             if line == "ping cho.ppy.sh":
                 osubot.send("PONG cho.ppy.sh")
-                if room and not receiving_names and len(queue) > 0: # check if next host is still here
+                if room and not receiving_names and len(queue) > 0:  # check if next host is still here
                     osubot.send(f"NAMES {room}")
                     names = []
                     receiving_names = True
