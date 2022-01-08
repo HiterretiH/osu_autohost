@@ -19,7 +19,7 @@ class OsuIrc:
         self.sock.close()
 
     def send(self, text: str):
-        self.sock.send((text + '\n').encode())
+        self.sock.send((text + '\n').encode(errors="ignore"))
 
     def receive(self, size=2048):
-        return self.sock.recv(size).decode().lower()
+        return self.sock.recv(size).decode(errors="ignore").lower()
