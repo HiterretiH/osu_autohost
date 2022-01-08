@@ -13,6 +13,11 @@ def get_new_line(irc):
         prev = lines[-1]
 
 
+def set_host(irc, room, name):
+    irc.send(f"PRIVMSG {room} :!mp host {name}")
+    print(name, "became host")
+
+
 config.osuirc_name = config.osuirc_name.replace(' ', '_').lower()
 
 osubot = osu.OsuIrc(config.osuirc_name, config.osuirc_password)
@@ -60,7 +65,7 @@ try:
                             while len(queue) > 0 and queue[0] not in names:
                                 queue.popleft()
                             if len(queue) > 0:
-                                osubot.send(f"PRIVMSG {room} :!mp host {queue[0]}")
+                                set_host(osubot, room, queue[0])
                         print("Current players:", *names)
 
                 if "privmsg " + room in line:
@@ -72,12 +77,12 @@ try:
                             player = msg[:msg.find("joined in slot")-1].replace(' ', '_')
                             queue.append(player)
                             if len(queue) == 1:
-                                osubot.send(f"PRIVMSG {room} :!mp host {queue[0]}")
+                                set_host(osubot, room, queue[0])
                             print(player, "joined the game")
                         elif "left the game" in msg:
                             player = msg[:msg.find("left the game")-1].replace(' ', '_')
                             if len(queue) > 1 and player == queue[0]:
-                                osubot.send(f"PRIVMSG {room} :!mp host {queue[1]}")
+                                set_host(osubot, room, queue[1])
                             if player in queue:
                                 queue.remove(player)
                             print(player, "left the game")
@@ -88,7 +93,7 @@ try:
                         elif "the match has finished!" == msg:
                             print("Match finished")
                             if len(queue) > 0:
-                                osubot.send(f"PRIVMSG {room} :!mp host {queue[0]}")
+                                set_host(osubot, room, queue[0])
                                 osubot.send(f"NAMES {room}")
                                 names = []
                                 receiving_names = True
