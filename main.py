@@ -76,9 +76,9 @@ try:
                         if "joined in slot" in msg:
                             player = msg[:msg.find("joined in slot")-1].replace(' ', '_')
                             queue.append(player)
+                            print(player, "joined the game")
                             if len(queue) == 1:
                                 set_host(osubot, room, queue[0])
-                            print(player, "joined the game")
                         elif "left the game" in msg:
                             player = msg[:msg.find("left the game")-1].replace(' ', '_')
                             if len(queue) > 1 and player == queue[0]:
@@ -86,6 +86,12 @@ try:
                             if player in queue:
                                 queue.remove(player)
                             print(player, "left the game")
+                            if len(queue) == 0:
+                                osubot.send(f"PRIVMSG {room} :!mp name {config.lobby_name}")
+                                osubot.send(f"PRIVMSG {room} :!mp password {config.lobby_password}")
+                                osubot.send(f"PRIVMSG {room} :!mp mods freemod")
+                                osubot.send(f"PRIVMSG {room} :!mp size 16")
+                                print("The room is empty. Settings discarded")
                         elif "the match has started!" == msg:
                             print("Match started")
                             if len(queue) > 1:
