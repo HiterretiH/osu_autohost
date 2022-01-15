@@ -5,7 +5,7 @@ Osu! chat bot which creates in-game lobby with auto host rotation
 1. Download this repository
 2. Fill in config.py (see below)
 3. Run main.py with python
-- If you want to stop the bot, just press ctrl+c in console window, bot will automatically close the lobby and stop running
+- If you want to stop the bot, just press ctrl+c in the console window, bot will automatically close the lobby and terminate
 
 # How to correctly fill config.py
 Open it with any text editor and fill with your data. Variable notation:
