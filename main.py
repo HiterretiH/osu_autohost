@@ -18,6 +18,13 @@ def set_host(irc, room, name):
     print(name, "became host")
 
 
+def discard_settings(irc, room):
+    irc.send(f"PRIVMSG {room} :!mp name {config.lobby_name}")
+    irc.send(f"PRIVMSG {room} :!mp password {config.lobby_password}")
+    irc.send(f"PRIVMSG {room} :!mp mods freemod")
+    irc.send(f"PRIVMSG {room} :!mp size 16")
+
+
 config.osuirc_name = config.osuirc_name.replace(' ', '_').lower()
 
 osubot = osu.OsuIrc(config.osuirc_name, config.osuirc_password)
@@ -86,10 +93,7 @@ try:
                             queue.remove(player)
                         print(player, "left the game")
                         if len(queue) == 0:
-                            osubot.send(f"PRIVMSG {room} :!mp name {config.lobby_name}")
-                            osubot.send(f"PRIVMSG {room} :!mp password {config.lobby_password}")
-                            osubot.send(f"PRIVMSG {room} :!mp mods freemod")
-                            osubot.send(f"PRIVMSG {room} :!mp size 16")
+                            discard_settings(osubot, room)
                             print("The room is empty. Settings discarded")
                     elif "the match has started!" == msg:
                         print("Match started")
@@ -118,9 +122,7 @@ try:
             if line.startswith(f":{config.osuirc_name}!cho@ppy.sh join :#"):
                 room = line[line.rfind('#'):]
                 sep = room + " :"
-                osubot.send(f"PRIVMSG {room} :!mp password {config.lobby_password}")
-                osubot.send(f"PRIVMSG {room} :!mp mods freemod")
-                osubot.send(f"PRIVMSG {room} :!mp size 16")
+                discard_settings(osubot, room)
                 print("Created room:", room)
 
 except KeyboardInterrupt:
