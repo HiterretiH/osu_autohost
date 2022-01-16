@@ -36,20 +36,19 @@ class ConfigReaderWriter(threading.Thread):
     def process(self):
         current_config = self.read()
 
-        self._lock.acquire()
-        commented = []
-        for room in self._config:
-            if room.get("old_id"):
-                current_room = find_dict_in_list(current_config, "number", room.get("number"))
-                if room.get("id") or room.get("recreate when closed"):
-                    current_room.update({"id": room.get("id")})
-                else:
-                    commented.append(current_room)
-                    current_config.remove(current_room)
-                room.pop("old_id")
-        self._config.clear()
-        self._config.extend(current_config)
-        self._lock.release()
+        with self._lock:
+            commented = []
+            for room in self._config:
+                if room.get("old_id"):
+                    current_room = find_dict_in_list(current_config, "number", room.get("number"))
+                    if room.get("id") or room.get("recreate when closed"):
+                        current_room.update({"id": room.get("id")})
+                    else:
+                        commented.append(current_room)
+                        current_config.remove(current_room)
+                    room.pop("old_id")
+            self._config.clear()
+            self._config.extend(current_config)
 
         self.write(yaml.dump(current_config).replace("-", "\n-"), yaml.dump(commented))
         print("Config updated")
