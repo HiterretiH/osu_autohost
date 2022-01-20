@@ -41,7 +41,7 @@ class ConfigReaderWriter(threading.Thread):
             for room in self._config:
                 if room.get("old_id"):
                     current_room = find_dict_in_list(current_config, "number", room.get("number"))
-                    if room.get("id") or room.get("recreate when closed"):
+                    if room.get("recreate when closed"):
                         current_room.update({"id": room.get("id")})
                     else:
                         commented.append(current_room)
