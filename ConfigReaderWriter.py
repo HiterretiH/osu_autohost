@@ -34,34 +34,50 @@ class ConfigReaderWriter(threading.Thread):
         self._stopped = True
 
     def process(self):
-        current_config = self.read()
+        current_config, comments, commented_rooms = self.read()
 
         with self._lock:
-            commented = []
             for room in self._config:
                 if room.get("old_id"):
                     current_room = find_dict_in_list(current_config, "number", room.get("number"))
                     if room.get("recreate when closed"):
                         current_room.update({"id": room.get("id")})
                     else:
-                        commented.append(current_room)
+                        commented_rooms.append(current_room)
                         current_config.remove(current_room)
                     room.pop("old_id")
             self._config.clear()
             self._config.extend(current_config)
 
-        self.write(yaml.dump(current_config).replace("-", "\n-"), yaml.dump(commented))
+        if commented_rooms:
+            comments += "\n\n" + "\n".join(["#" + line for line in yaml.dump(commented_rooms).split("\n")])
+
+        self.write(yaml.dump(current_config).replace("\n-", "\n\n-") + "\n" + comments)
         print("Config updated")
 
-    def read(self) -> list:
+    def read(self):
+        """
+        :return: three objects:
+            - current rooms: list;
+            - commented lines: str;
+            - rooms with parsing error: list
+        """
+
         self._file.seek(0)
-        current_config = yaml.safe_load(self._file)
+        text = self._file.read()
+        comments = "\n".join(filter(lambda el: el.startswith("#"), text.split("\n")))
+        current_config = yaml.safe_load(text)
+        with_err = []
         if not current_config:
-            return []
+            return [], comments, with_err
+        if type(current_config) != list:
+            print(f"Error while reading rooms file! Looks like you forget '- ' somewhere")
+            return [], comments, with_err
         used_numbers = []
         for [i, room] in enumerate(current_config):
             if type(room) != dict or not (room.get("name") or room.get("existing")):
-                print(f"Error while reading rooms file! Please check room #{i}")
+                print(f"Error while reading rooms file! Please check commented room")
+                with_err.append(room)
                 current_config.remove(room)
                 continue
 
@@ -78,14 +94,10 @@ class ConfigReaderWriter(threading.Thread):
 
             used_numbers.append(room.get("number"))
 
-        return current_config
+        return current_config, comments, with_err
 
-    def write(self, data="", commented=""):
+    def write(self, data=""):
         self._file.seek(0)
         self._file.truncate()
-        if commented != "[]\n":
-            commented = "\n".join(["#" + line for line in commented.split("\n")])
-            self._file.write(data + "\n" + commented)
-        else:
-            self._file.write(data)
+        self._file.write(data)
         self._file.flush()
