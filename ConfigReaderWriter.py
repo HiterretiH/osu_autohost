@@ -89,8 +89,7 @@ class ConfigReaderWriter(threading.Thread):
                 "discard when empty": bool(room.get("discard when empty")),
                 "close on exit": bool(room.get("close on exit")),
                 "old_id": "",
-                "num": get_number(used_numbers, str(room.get("num")) if room.get("num") else str(i)),
-                "created": bool(room.get("created"))
+                "num": get_number(used_numbers, str(room.get("num")) if room.get("num") else str(i))
             })
 
             used_numbers.append(room.get("number"))
