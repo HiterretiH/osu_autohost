@@ -65,7 +65,7 @@ class ConfigReaderWriter(threading.Thread):
 
         self._file.seek(0)
         text = self._file.read()
-        comments = "\n".join(filter(lambda el: el.startswith("#"), text.split("\n")))
+        comments = "\n".join(filter(lambda line: line.startswith("#"), text.split("\n")))
         current_config = yaml.safe_load(text)
         with_err = []
         if not current_config:
