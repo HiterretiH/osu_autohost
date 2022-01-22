@@ -46,12 +46,14 @@ def check_rooms(irc, queue, commands_time, names, receiving_names):
 
     for room in rooms:
         if room['num'] not in queue.keys():
+            set_dicts(room['num'], queue, commands_time, names, receiving_names)
             if not room['id']:
                 create_room(irc, room)
             else:
                 irc.send(f"JOIN {room['id']}")
+                irc.send(f"NAMES {room['id']}")
+                receiving_names[room['num']] = True
                 print(f"Joining in existing room {room['id']}")
-            set_dicts(room['num'], queue, commands_time, names, receiving_names)
 
     if len(queue.keys()) != len(rooms):
         nums = [room['num'] for room in rooms]
@@ -130,6 +132,8 @@ try:
                                 names[num].append(user)
                                 if user not in queue[num]:
                                     queue[num].append(user)
+                                    if len(queue) == 1:
+                                        set_host(osubot, room, user)
                     if line.endswith(sep + "end of /names list."):
                         receiving_names[num] = False
                         if len(queue[num]) > 0 and queue[num][0] not in names[num]:
