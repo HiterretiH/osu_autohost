@@ -29,7 +29,6 @@ def discard_settings(irc, room: dict):
 
 def create_room(irc, room: dict):
     irc.send(f"PRIVMSG BanchoBot :mp make {room['name']}")
-    room['created'] = True
 
 
 def set_dicts(num, queue, commands_time, names, receiving_names):
