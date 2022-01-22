@@ -75,7 +75,8 @@ class ConfigReaderWriter(threading.Thread):
             return [], comments, with_err
         used_numbers = []
         for [i, room] in enumerate(current_config):
-            if type(room) != dict or not (room.get("name") or room.get("existing")):
+            if type(room) != dict or (not room.get("name") and not room.get("id")) or \
+                    (not room.get("name") and (room.get("recreate when closed") or room.get("discard when empty"))):
                 print(f"Error while reading rooms file! Please check commented room")
                 with_err.append(room)
                 current_config.remove(room)
