@@ -48,6 +48,9 @@ def check_rooms(irc, queue, commands_time, names, receiving_names):
         if room['num'] not in queue.keys():
             if not room['id']:
                 create_room(irc, room)
+            else:
+                irc.send(f"JOIN {room['id']}")
+                print(f"Joining in existing room {room['id']}")
             set_dicts(room['num'], queue, commands_time, names, receiving_names)
 
     if len(queue.keys()) != len(rooms):
