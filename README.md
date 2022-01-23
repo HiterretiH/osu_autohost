@@ -82,7 +82,7 @@ Every room has the following options:
 | num | Auto-generated unique identifier for every lobby. You can specify it, but it's better if the program generates it automatically |
 | old_id | This value is used in the program. You don't need it, so you can skip it |
 
-You can specify only those options that you need. i.e. you can set only `name` or only `id`.
+You can specify only those options that you need. e.g. you can set only `name` or only `id`.
 If the option is not specified, it will be false/empty by default.
 
 Settings such as `name` and `password` won't be applied to the existing room (only if `discard when empty` is true and the room becomes empty)
