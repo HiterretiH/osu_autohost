@@ -99,6 +99,7 @@ try:
                 for room in rooms:
                     if not room['id']:
                         room['id'] = line[line.rfind('#'):]
+                        room['old_id'] = '1'
                         discard_settings(osubot, room)
                         print(f"Created room #{room['num']}: {room['id']}")
                         break
