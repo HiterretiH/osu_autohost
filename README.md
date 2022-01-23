@@ -51,6 +51,8 @@ commands_timeout = 5
 All configuration related to rooms stored in `rooms.yaml`.
 This file automatically updates when the program is running, so you can adjust room settings even if the bot is working.
 
+Also, please note that every user can create only 4 existing in the same time tournament rooms.
+
 Sample configuration:
 
 ```yaml
