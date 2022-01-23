@@ -1,6 +1,12 @@
 # osu_autohost
 Osu! chatbot, which creates and maintains an in-game lobbies with auto host rotation
 
+# Table of Contents
+- [Features (what this bot can do)](#features-what-this-bot-can-do)
+- [Usage (how to use this thing)](#usage-how-to-use-this-thing)
+- [Bot configuration](#bot-configuration)
+- [Rooms configuration](#rooms-configuration)
+
 # Features (what this bot can do)
 - Generate players queue based on joining time
 - Give host to the first player in the queue after every game
