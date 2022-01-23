@@ -1,0 +1,7 @@
+- name: 5*-6* auto host rotate | !info !queue
+
+- name: host rotate | !info !queue | !info !queue
+  password: qwerty
+  close on exit: true
+  discard when empty: false
+  recreate when closed: true
