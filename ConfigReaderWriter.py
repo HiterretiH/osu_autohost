@@ -78,7 +78,7 @@ class ConfigReaderWriter(threading.Thread):
             print_with_time(f"Error while reading rooms file! Looks like you forget '- ' somewhere")
             return [], comments, with_err
         used_numbers = []
-        for [i, room] in enumerate(current_config):
+        for i, room in enumerate(current_config):
             if type(room) != dict or (not room.get("name") and not room.get("id")) or \
                     (not room.get("name") and (room.get("recreate when closed") or room.get("discard when empty"))):
                 print_with_time(f"Error while reading rooms file! Please check commented room")
