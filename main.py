@@ -17,7 +17,7 @@ def get_new_line(irc):
 
 def set_host(irc, room: dict, name: str):
     irc.send(f"PRIVMSG {room['id']} :!mp host {name}")
-    print(f"{name} became host (room #{room['num']})")
+    print(f"(#{room['num']}) {name} became host")
 
 
 def discard_settings(irc, room: dict):
@@ -53,7 +53,7 @@ def check_rooms(irc, queue, commands_time, names, receiving_names):
                 irc.send(f"JOIN {room['id']}")
                 irc.send(f"NAMES {room['id']}")
                 receiving_names[room['num']] = True
-                print(f"Joining in existing room {room['id']}")
+                print(f"Joining in {room['id']}")
 
     if len(queue.keys()) != len(rooms):
         nums = [room['num'] for room in rooms]
@@ -101,7 +101,7 @@ try:
                         room['id'] = line[line.rfind('#'):]
                         room['old_id'] = '1'
                         discard_settings(osubot, room)
-                        print(f"Created room #{room['num']}: {room['id']}")
+                        print(f"(#{room['num']}) Created room: {room['id']}")
                         break
             continue
 
@@ -114,7 +114,7 @@ try:
                 sep = room['id'] + " :"
 
                 if line == f":{config.osuirc_name}!cho@ppy.sh part :{mp_id}":
-                    print(f"{mp_id} (room #{num}) is closed")
+                    print(f"(#{num}) {mp_id} is closed")
 
                     room['old_id'] = room['id']
                     room['id'] = ""
@@ -142,7 +142,7 @@ try:
                                 queue[num].popleft()
                             if len(queue[num]) > 0:
                                 set_host(osubot, room, queue[num][0])
-                        print(f"Current players in room #{num}:", *names[num])
+                        print(f"(#{num}) Current players:", *names[num])
 
                 if "privmsg " + mp_id in line:
                     name = line[1: line.find("!")]
@@ -152,7 +152,7 @@ try:
                         if "joined in slot" in msg:
                             player = msg[:msg.find("joined in slot")-1].replace(' ', '_')
                             queue[num].append(player)
-                            print(player, f"joined the game (room #{num})")
+                            print(f"(#{num}) {player} joined the game")
                             if len(queue[num]) == 1:
                                 set_host(osubot, room, queue[num][0])
                         elif "left the game" in msg:
@@ -161,16 +161,16 @@ try:
                                 set_host(osubot, room, queue[num][1])
                             if player in queue[num]:
                                 queue[num].remove(player)
-                            print(player, f"left the game (room #{num})")
+                            print(f"(#{num}) {player} left the game")
                             if room['discard when empty'] and len(queue[num]) == 0:
                                 discard_settings(osubot, room)
-                                print(f"Room #{num} is empty. Settings discarded")
+                                print(f"(#{num}) Room is empty. Settings discarded")
                         elif "the match has started!" == msg:
-                            print(f"Match started (room #{num})")
+                            print(f"(#{num}) Match started")
                             if len(queue[num]) > 1:
                                 queue[num].rotate(-1)
                         elif "the match has finished!" == msg:
-                            print(f"Match finished (room #{num})")
+                            print(f"(#{num}) Match finished")
                             if len(queue[num]) > 0:
                                 set_host(osubot, room, queue[num][0])
                                 osubot.send(f"NAMES {mp_id}")
@@ -179,7 +179,7 @@ try:
 
                     else:
                         if msg in ("!info", "!queue"):
-                            print(f"(room #{num}) {name}: {msg}")
+                            print(f"(#{num}) {name}: {msg}")
                             t = time()
                             if t >= commands_time[num][msg]:
                                 commands_time[num][msg] = t + config.commands_timeout
@@ -195,7 +195,7 @@ except KeyboardInterrupt:
             if room['id'] and room['close on exit']:
                 osubot.send(f"PRIVMSG {room['id']} :!mp close")
                 room['id'] = ''
-                print(f"Room #{room['num']} closed")
+                print(f"(#{room['num']}) Room closed")
     config_reader.process()
     config_reader.stop()
     osubot.close()
