@@ -16,6 +16,10 @@ def get_number(used: list, st: str) -> str:
     return st
 
 
+def print_with_time(*args, **kwargs):
+    print(time.strftime("[%H:%M:%S]"), *args, **kwargs)
+
+
 class ConfigReaderWriter(threading.Thread):
     def __init__(self, lock: threading.Lock, config: list, file_name: str, timeout: int = 180):
         super().__init__()
@@ -53,7 +57,7 @@ class ConfigReaderWriter(threading.Thread):
             comments += "\n\n" + "\n".join(["#" + line for line in yaml.dump(commented_rooms).split("\n")])
 
         self.write(yaml.dump(current_config).replace("\n-", "\n\n-") + "\n" + comments)
-        print("Config updated")
+        print_with_time("Config updated")
 
     def read(self):
         """
@@ -71,13 +75,13 @@ class ConfigReaderWriter(threading.Thread):
         if not current_config:
             return [], comments, with_err
         if type(current_config) != list:
-            print(f"Error while reading rooms file! Looks like you forget '- ' somewhere")
+            print_with_time(f"Error while reading rooms file! Looks like you forget '- ' somewhere")
             return [], comments, with_err
         used_numbers = []
         for [i, room] in enumerate(current_config):
             if type(room) != dict or (not room.get("name") and not room.get("id")) or \
                     (not room.get("name") and (room.get("recreate when closed") or room.get("discard when empty"))):
-                print(f"Error while reading rooms file! Please check commented room")
+                print_with_time(f"Error while reading rooms file! Please check commented room")
                 with_err.append(room)
                 current_config.remove(room)
                 continue

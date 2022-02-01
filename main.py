@@ -1,6 +1,6 @@
 import osu
 import config
-from time import time
+import time
 import collections
 import ConfigReaderWriter
 import threading
@@ -15,9 +15,13 @@ def get_new_line(irc):
         prev = lines[-1]
 
 
+def print_with_time(*args, **kwargs):
+    print(time.strftime("[%H:%M:%S]"), *args, **kwargs)
+
+
 def set_host(irc, room: dict, name: str):
     irc.send(f"PRIVMSG {room['id']} :!mp host {name}")
-    print(f"(#{room['num']}) {name} became host")
+    print_with_time(f"(#{room['num']}) {name} became host")
 
 
 def discard_settings(irc, room: dict):
@@ -53,7 +57,7 @@ def check_rooms(irc, queue, commands_time, names, receiving_names):
                 irc.send(f"JOIN {room['id']}")
                 irc.send(f"NAMES {room['id']}")
                 receiving_names[room['num']] = True
-                print(f"Joining in {room['id']}")
+                print_with_time(f"Joining in {room['id']}")
 
     if len(queue.keys()) != len(rooms):
         nums = [room['num'] for room in rooms]
@@ -101,7 +105,7 @@ try:
                         room['id'] = line[line.rfind('#'):]
                         room['old_id'] = '1'
                         discard_settings(osubot, room)
-                        print(f"(#{room['num']}) Created room: {room['id']}")
+                        print_with_time(f"(#{room['num']}) Created room: {room['id']}")
                         break
             continue
 
@@ -114,13 +118,13 @@ try:
                 sep = room['id'] + " :"
 
                 if line == f":{config.osuirc_name}!cho@ppy.sh part :{mp_id}":
-                    print(f"(#{num}) {mp_id} is closed")
+                    print_with_time(f"(#{num}) {mp_id} is closed")
 
                     room['old_id'] = room['id']
                     room['id'] = ""
 
                     if room["recreate when closed"]:
-                        print(f"Creating new room with name {room['name']}")
+                        print_with_time(f"Creating new room with name {room['name']}")
                         create_room(osubot, room)
                         set_dicts(num, queue, commands_time, names, receiving_names)
                     continue
@@ -142,7 +146,7 @@ try:
                                 queue[num].popleft()
                             if len(queue[num]) > 0:
                                 set_host(osubot, room, queue[num][0])
-                        print(f"(#{num}) Current players:", *names[num])
+                        print_with_time(f"(#{num}) Current players:", *names[num])
 
                 if "privmsg " + mp_id in line:
                     name = line[1: line.find("!")]
@@ -152,7 +156,7 @@ try:
                         if "joined in slot" in msg:
                             player = msg[:msg.find("joined in slot")-1].replace(' ', '_')
                             queue[num].append(player)
-                            print(f"(#{num}) {player} joined the game")
+                            print_with_time(f"(#{num}) {player} joined the game")
                             if len(queue[num]) == 1:
                                 set_host(osubot, room, queue[num][0])
                         elif "left the game" in msg:
@@ -161,16 +165,16 @@ try:
                                 set_host(osubot, room, queue[num][1])
                             if player in queue[num]:
                                 queue[num].remove(player)
-                            print(f"(#{num}) {player} left the game")
+                            print_with_time(f"(#{num}) {player} left the game")
                             if room['discard when empty'] and len(queue[num]) == 0:
                                 discard_settings(osubot, room)
-                                print(f"(#{num}) Room is empty. Settings discarded")
+                                print_with_time(f"(#{num}) Room is empty. Settings discarded")
                         elif "the match has started!" == msg:
-                            print(f"(#{num}) Match started")
+                            print_with_time(f"(#{num}) Match started")
                             if len(queue[num]) > 1:
                                 queue[num].rotate(-1)
                         elif "the match has finished!" == msg:
-                            print(f"(#{num}) Match finished")
+                            print_with_time(f"(#{num}) Match finished")
                             if len(queue[num]) > 0:
                                 set_host(osubot, room, queue[num][0])
                                 osubot.send(f"NAMES {mp_id}")
@@ -179,8 +183,8 @@ try:
 
                     else:
                         if msg in ("!info", "!queue"):
-                            print(f"(#{num}) {name}: {msg}")
-                            t = time()
+                            print_with_time(f"(#{num}) {name}: {msg}")
+                            t = time.time()
                             if t >= commands_time[num][msg]:
                                 commands_time[num][msg] = t + config.commands_timeout
                                 if msg == "!info":
@@ -195,7 +199,7 @@ except KeyboardInterrupt:
             if room['id'] and room['close on exit']:
                 osubot.send(f"PRIVMSG {room['id']} :!mp close")
                 room['id'] = ''
-                print(f"(#{room['num']}) Room closed")
+                print_with_time(f"(#{room['num']}) Room closed")
     config_reader.process()
     config_reader.stop()
     osubot.close()
