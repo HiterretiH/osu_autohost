@@ -35,14 +35,15 @@ def create_room(irc, room: dict):
     irc.send(f"PRIVMSG BanchoBot :mp make {room['name']}")
 
 
-def set_dicts(num, queue, commands_time, names, receiving_names):
+def set_dicts(num, queue, commands_time, names, receiving_names, skip_counter):
     queue.update( {num: collections.deque()} )
     commands_time.update( {num: {"!queue": 0, "!info": 0}} )
     names.update( {num: []} )
     receiving_names.update( {num: False} )
+    skip_counter.update( {num: 0} )
 
 
-def check_rooms(irc, queue, commands_time, names, receiving_names):
+def check_rooms(irc, queue, commands_time, names, receiving_names, skip_counter):
     """
     This function checks related to room dicts, adds missing keys, and removes redundant ones.
     Also, creates room if it does not exist
@@ -50,7 +51,7 @@ def check_rooms(irc, queue, commands_time, names, receiving_names):
 
     for room in rooms:
         if room['num'] not in queue.keys():
-            set_dicts(room['num'], queue, commands_time, names, receiving_names)
+            set_dicts(room['num'], queue, commands_time, names, receiving_names, skip_counter)
             if not room['id']:
                 create_room(irc, room)
             else:
@@ -70,6 +71,7 @@ def check_rooms(irc, queue, commands_time, names, receiving_names):
 
 
 config.osuirc_name = config.osuirc_name.replace(' ', '_').lower()
+config.skip_percent /= 100
 
 osubot = osu.OsuIrc(config.osuirc_name, config.osuirc_password)
 osubot.connect()
@@ -84,6 +86,7 @@ queue = {}
 commands_time = {}
 names = {}
 receiving_names = {}
+skip_counter = {}
 
 try:
     for line in get_new_line(osubot):
@@ -110,7 +113,7 @@ try:
             continue
 
         lock.acquire()
-        check_rooms(osubot, queue, commands_time, names, receiving_names)
+        check_rooms(osubot, queue, commands_time, names, receiving_names, skip_counter)
         for room in rooms:
             if room['id']:
                 mp_id = room['id']
@@ -126,7 +129,7 @@ try:
                     if room["recreate when closed"]:
                         print_with_time(f"Creating new room with name {room['name']}")
                         create_room(osubot, room)
-                        set_dicts(num, queue, commands_time, names, receiving_names)
+                        set_dicts(num, queue, commands_time, names, receiving_names, skip_counter)
                     continue
 
                 if receiving_names[num]:
@@ -139,6 +142,7 @@ try:
                                     queue[num].append(user)
                                     if len(queue) == 1:
                                         set_host(osubot, room, user)
+                                        skip_counter[num] = 0
                     if line.endswith(sep + "end of /names list."):
                         receiving_names[num] = False
                         if len(queue[num]) > 0 and queue[num][0] not in names[num]:
@@ -146,6 +150,7 @@ try:
                                 queue[num].popleft()
                             if len(queue[num]) > 0:
                                 set_host(osubot, room, queue[num][0])
+                                skip_counter[num] = 0
                         print_with_time(f"(#{num}) Current players:", *names[num])
 
                 if "privmsg " + mp_id in line:
@@ -159,10 +164,12 @@ try:
                             print_with_time(f"(#{num}) {player} joined the game")
                             if len(queue[num]) == 1:
                                 set_host(osubot, room, queue[num][0])
+                                skip_counter[num] = 0
                         elif "left the game" in msg:
                             player = msg[:msg.find("left the game")-1].replace(' ', '_')
                             if len(queue[num]) > 1 and player == queue[num][0]:
                                 set_host(osubot, room, queue[num][1])
+                                skip_counter[num] = 0
                             if player in queue[num]:
                                 queue[num].remove(player)
                             print_with_time(f"(#{num}) {player} left the game")
@@ -177,6 +184,7 @@ try:
                             print_with_time(f"(#{num}) Match finished")
                             if len(queue[num]) > 0:
                                 set_host(osubot, room, queue[num][0])
+                                skip_counter[num] = 0
                                 osubot.send(f"NAMES {mp_id}")
                                 names[num] = []
                                 receiving_names[num] = True
@@ -191,6 +199,16 @@ try:
                                     osubot.send(f"PRIVMSG {mp_id} :{config.help_msg}")
                                 elif msg == "!queue":
                                     osubot.send(f"PRIVMSG {mp_id} :Host queue: {' => '.join(queue[num])}")
+
+                        elif msg == "!skip":
+                            skip_counter[num] += 1
+                            print_with_time(f"(#{num}) {name}: {msg} ({skip_counter[num]} voted, {len(queue[num])} total)")
+                            if skip_counter[num] >= len(queue[num]) * config.skip_percent or name == queue[num][0]:
+                                if len(queue[num]) > 1:
+                                    queue[num].rotate(-1)
+                                set_host(osubot, room, queue[num][0])
+                                skip_counter[num] = 0
+                                osubot.send(f"PRIVMSG {mp_id} :Host skipped!")
         lock.release()
 
 except KeyboardInterrupt:
