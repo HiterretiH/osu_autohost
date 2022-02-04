@@ -4,6 +4,7 @@ import time
 import collections
 import ConfigReaderWriter
 import threading
+from math import ceil
 
 
 def get_new_line(irc):
@@ -209,6 +210,8 @@ try:
                                 set_host(osubot, room, queue[num][0])
                                 skip_counter[num] = 0
                                 osubot.send(f"PRIVMSG {mp_id} :Host skipped!")
+                            else:
+                                osubot.send(f"PRIVMSG {mp_id} :{skip_counter[num]} from {ceil(len(queue[num]) * config.skip_percent)} voted to skip")
         lock.release()
 
 except KeyboardInterrupt:
