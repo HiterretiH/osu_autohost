@@ -211,7 +211,7 @@ try:
                                 skip_counter[num] = 0
                                 osubot.send(f"PRIVMSG {mp_id} :Host skipped!")
                             else:
-                                osubot.send(f"PRIVMSG {mp_id} :{skip_counter[num]} from {ceil(len(queue[num]) * config.skip_percent)} voted to skip")
+                                osubot.send(f"PRIVMSG {mp_id} :{skip_counter[num]} from {ceil(len(queue[num]) * config.skip_percent)} voted to skip current host")
         lock.release()
 
 except KeyboardInterrupt:
