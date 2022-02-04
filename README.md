@@ -3,6 +3,7 @@ Osu! chatbot, which creates and maintains an in-game lobbies with auto host rota
 
 # Table of Contents
 - [Features](#features)
+- [Chat commands](#chat-commands)
 - [Usage](#usage)
 - [Bot configuration](#bot-configuration)
 - [Rooms configuration](#rooms-configuration)
@@ -10,11 +11,18 @@ Osu! chatbot, which creates and maintains an in-game lobbies with auto host rota
 # Features
 - Generate players queue based on joining time
 - Give host to the first player in the queue after every game
+- Skip current host if players voted for this
 - Maintain several rooms at the same time
 - Create a room with a given name and settings
 - Connect to an existing room (but it must be a referee in this room)
 
-# Usage
+# Chat commands
+Available chat commands:
+- **!info** - Send help message to chat
+- **!queue** - Send host queue to chat
+- **!skip** - Vote to skip current host. Also, the host can vote himself, then the pass will happen immediately, without reaching the required votes
+
+# Usage  
 1. Download this repository:
     - Click on the green button "Clone" in the top right
     - Click "Download ZIP"
@@ -31,20 +39,22 @@ All configurations stored in `config.py`
 
 So to start, just open it with your favorite text editor. And then fill in all variables as shown below
 
-| Variable         | Description                                                 | Where you can get it     |
-| :--------------- | :---------------------------------------------------------- | :----------------------- |
-| osuirc_name      | Your osu! account username                                  | https://osu.ppy.sh/p/irc |
-| osuirc_password  | Osu IRC password. It's different from your account password | https://osu.ppy.sh/p/irc |
-| help_msg         | Message which bot will send on`!info` command               |                          |
-| commands_timeout | Timeout in seconds for !info and !queue commands            |                          |
+| Variable         | Description                                                  | Where you can get it     |
+| :--------------- | :----------------------------------------------------------- | :----------------------- |
+| osuirc_name      | Your osu! account username                                   | https://osu.ppy.sh/p/irc |
+| osuirc_password  | Osu IRC password. It's different from your account password  | https://osu.ppy.sh/p/irc |
+| help_msg         | Message which bot will send on`!info` command                |                          |
+| commands_timeout | Timeout in seconds for !info and !queue commands             |                          |
+| skip_percent     | Percent of voted players required to change the current host |                          |
 
 Sample file:
 ```python
 osuirc_name = "User_name"
 osuirc_password = "aaaa1111"
 
-help_msg = "This is an auto host rotate lobby. This means that host status automatically changes between players, so everyone can set the map which want to play on. (source)[https://github.com/HiterretiH/osu_autohost]"
+help_msg = "This is an auto host rotate lobby. This means that host status automatically changes between players, so everyone can set the map which want to play on. Available chat commands: !info !queue !skip (source)[https://github.com/HiterretiH/osu_autohost]"
 commands_timeout = 5
+skip_percent = 51
 ```
 
 # Rooms configuration
