@@ -179,6 +179,13 @@ try:
                             if room['discard when empty'] and len(queue[num]) == 0:
                                 discard_settings(osubot, room)
                                 print_with_time(f"(#{num}) Room is empty. Settings discarded")
+                            if len(skip_list[num]) >= len(queue[num]) * config.skip_percent and len(queue) > 0:
+                                if len(queue[num]) > 1:
+                                    queue[num].rotate(-1)
+                                set_host(osubot, room, queue[num][0])
+                                skip_list[num].clear()
+                                osubot.send(f"PRIVMSG {mp_id} :Host skipped!")
+                                print_with_time(f"(#{num}) Host skipped")
                         elif "the match has started!" == msg:
                             print_with_time(f"(#{num}) Match started")
                             if len(queue[num]) > 1:
