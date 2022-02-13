@@ -171,6 +171,8 @@ try:
                             if len(queue[num]) > 1 and player == queue[num][0]:
                                 set_host(osubot, room, queue[num][1])
                                 skip_list[num].clear()
+                            if player in skip_list[num]:
+                                skip_list[num].remove(player)
                             if player in queue[num]:
                                 queue[num].remove(player)
                             print_with_time(f"(#{num}) {player} left the game")
