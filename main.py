@@ -36,15 +36,15 @@ def create_room(irc, room: dict):
     irc.send(f"PRIVMSG BanchoBot :mp make {room['name']}")
 
 
-def set_dicts(num, queue, commands_time, names, receiving_names, skip_counter):
+def set_dicts(num, queue, commands_time, names, receiving_names, skip_list):
     queue.update( {num: collections.deque()} )
     commands_time.update( {num: {"!queue": 0, "!info": 0}} )
     names.update( {num: []} )
     receiving_names.update( {num: False} )
-    skip_counter.update( {num: 0} )
+    skip_list.update( {num: set()} )
 
 
-def check_rooms(irc, queue, commands_time, names, receiving_names, skip_counter):
+def check_rooms(irc, queue, commands_time, names, receiving_names, skip_list):
     """
     This function checks related to room dicts, adds missing keys, and removes redundant ones.
     Also, creates room if it does not exist
@@ -52,7 +52,7 @@ def check_rooms(irc, queue, commands_time, names, receiving_names, skip_counter)
 
     for room in rooms:
         if room['num'] not in queue.keys():
-            set_dicts(room['num'], queue, commands_time, names, receiving_names, skip_counter)
+            set_dicts(room['num'], queue, commands_time, names, receiving_names, skip_list)
             if not room['id']:
                 create_room(irc, room)
             else:
@@ -87,7 +87,7 @@ queue = {}
 commands_time = {}
 names = {}
 receiving_names = {}
-skip_counter = {}
+skip_list = {}
 
 try:
     for line in get_new_line(osubot):
@@ -114,7 +114,7 @@ try:
             continue
 
         lock.acquire()
-        check_rooms(osubot, queue, commands_time, names, receiving_names, skip_counter)
+        check_rooms(osubot, queue, commands_time, names, receiving_names, skip_list)
         for room in rooms:
             if room['id']:
                 mp_id = room['id']
@@ -130,7 +130,7 @@ try:
                     if room["recreate when closed"]:
                         print_with_time(f"Creating new room with name {room['name']}")
                         create_room(osubot, room)
-                        set_dicts(num, queue, commands_time, names, receiving_names, skip_counter)
+                        set_dicts(num, queue, commands_time, names, receiving_names, skip_list)
                     continue
 
                 if receiving_names[num]:
@@ -143,7 +143,7 @@ try:
                                     queue[num].append(user)
                                     if len(queue) == 1:
                                         set_host(osubot, room, user)
-                                        skip_counter[num] = 0
+                                        skip_list[num].clear()
                     if line.endswith(sep + "end of /names list."):
                         receiving_names[num] = False
                         if len(queue[num]) > 0 and queue[num][0] not in names[num]:
@@ -151,7 +151,7 @@ try:
                                 queue[num].popleft()
                             if len(queue[num]) > 0:
                                 set_host(osubot, room, queue[num][0])
-                                skip_counter[num] = 0
+                                skip_list[num].clear()
                         print_with_time(f"(#{num}) Current players:", *names[num])
 
                 if "privmsg " + mp_id in line:
@@ -165,12 +165,12 @@ try:
                             print_with_time(f"(#{num}) {player} joined the game")
                             if len(queue[num]) == 1:
                                 set_host(osubot, room, queue[num][0])
-                                skip_counter[num] = 0
+                                skip_list[num].clear()
                         elif "left the game" in msg:
                             player = msg[:msg.find("left the game")-1].replace(' ', '_')
                             if len(queue[num]) > 1 and player == queue[num][0]:
                                 set_host(osubot, room, queue[num][1])
-                                skip_counter[num] = 0
+                                skip_list[num].clear()
                             if player in queue[num]:
                                 queue[num].remove(player)
                             print_with_time(f"(#{num}) {player} left the game")
@@ -185,7 +185,7 @@ try:
                             print_with_time(f"(#{num}) Match finished")
                             if len(queue[num]) > 0:
                                 set_host(osubot, room, queue[num][0])
-                                skip_counter[num] = 0
+                                skip_list[num].clear()
                                 osubot.send(f"NAMES {mp_id}")
                                 names[num] = []
                                 receiving_names[num] = True
@@ -202,16 +202,16 @@ try:
                                     osubot.send(f"PRIVMSG {mp_id} :Host queue: {' => '.join(queue[num])}")
 
                         elif msg == "!skip":
-                            skip_counter[num] += 1
-                            print_with_time(f"(#{num}) {name}: {msg} ({skip_counter[num]} voted, {len(queue[num])} total)")
-                            if skip_counter[num] >= len(queue[num]) * config.skip_percent or name == queue[num][0]:
+                            skip_list[num].add(name)
+                            print_with_time(f"(#{num}) {name}: {msg} ({len(skip_list[num])} voted, {len(queue[num])} total)")
+                            if len(skip_list[num]) >= len(queue[num]) * config.skip_percent or name == queue[num][0]:
                                 if len(queue[num]) > 1:
                                     queue[num].rotate(-1)
                                 set_host(osubot, room, queue[num][0])
-                                skip_counter[num] = 0
+                                skip_list[num].clear()
                                 osubot.send(f"PRIVMSG {mp_id} :Host skipped!")
                             else:
-                                osubot.send(f"PRIVMSG {mp_id} :{skip_counter[num]} from {ceil(len(queue[num]) * config.skip_percent)} voted to skip current host")
+                                osubot.send(f"PRIVMSG {mp_id} :{len(skip_list[num])} from {ceil(len(queue[num]) * config.skip_percent)} voted to skip current host")
         lock.release()
 
 except KeyboardInterrupt:
