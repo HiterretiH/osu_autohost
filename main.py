@@ -210,6 +210,7 @@ try:
                                 set_host(osubot, room, queue[num][0])
                                 skip_list[num].clear()
                                 osubot.send(f"PRIVMSG {mp_id} :Host skipped!")
+                                print_with_time(f"(#{num}) Host skipped")
                             else:
                                 osubot.send(f"PRIVMSG {mp_id} :{len(skip_list[num])} from {ceil(len(queue[num]) * config.skip_percent)} voted to skip current host")
         lock.release()
